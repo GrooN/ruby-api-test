@@ -1,0 +1,195 @@
+<!doctype html>
+<html ng-app="app">
+	<head>
+		<link rel="stylesheet" href="http://getbootstrap.com/2.3.2/assets/css/bootstrap.css">
+		<link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.2/angular.min.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.2/angular-route.js"></script>
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
+		<script src="http://cdn.jsdelivr.net/restangular/latest/restangular.min.js"></script>
+		
+
+		<script type="text/javascript">
+		var app = angular.module('app', ['ngRoute', 'restangular']);
+
+		app.config(function($httpProvider, RestangularProvider, $routeProvider) {
+			RestangularProvider
+				.setBaseUrl('http://192.168.33.10:9393')
+				.setResponseExtractor(function (response, operation) {
+					var parse = function (data) {
+						var result = undefined;
+						if (angular.isArray(data)) {
+							result = [];
+							for (var member in data) {
+								result[member] = parse(data[member]);
+							}
+						} else {
+							if (angular.isString(data)) result = JSON.parse(data);
+							else result = data;
+						}
+
+						return result;
+					};
+
+					return parse(response);
+				});
+
+			$routeProvider.when('/', {
+				templateUrl: 'list.html',
+				controller: ListCtrl
+			})
+			.when('/edit/:company_id', {
+				templateUrl: 'details.html',
+				controller: DetailsCtrl
+			})
+			.when('/new', {
+				templateUrl: 'details.html',
+				controller: CreateCtrl
+			});
+
+    	});
+
+    	function ListCtrl($scope, Restangular)
+    	{
+    		$scope.loading = true;
+			Restangular.all('company').getList().then(function (companies) {
+				$scope.companies = companies;
+				$scope.loading = false;
+			})
+    	}
+
+    	function CreateCtrl($scope, Restangular, $route, $location)
+    	{
+    		$scope.company = {};
+
+    		// create a new company
+			$scope.save = function () {
+				$scope.loading = true;
+				Restangular.all('company').post($scope.company).then(function (company) {
+					$scope.loading = false;
+
+					$scope.$evalAsync(function () {
+						$location.path('/edit/' + company.company_id);
+					});
+				});
+			};
+    	}
+
+    	function DetailsCtrl($scope, Restangular, $route)
+    	{
+    		$scope.company_id = $route.current.params.company_id;
+    		var restRoute = Restangular.one('company', $scope.company_id);
+    		
+    		$scope.loading = true;
+    		restRoute.get().then(function (company) {
+    			$scope.company = company;
+    			$scope.loading = false;
+    		});
+
+			// save an existing copy
+    		$scope.save = function () {
+    			$scope.loading = true;
+    			restRoute.put($scope.company).then(function () {
+					$scope.loading = false;
+    			});
+    		};
+    	}
+
+		</script>
+	</head>
+	<body>
+		<div ng-view></div>
+
+		<script type="text/ng-template" id="list.html">
+		<h1>List of Companies</h1>
+		<h4 ng-show="loading">Fetching data, please wait... <i class="fa fa-spinner fa-spin"></i></h4>
+		<div ng-repeat="company in companies | filter:search | orderBy:'company_id'">
+			<a href="#/edit/{{company.company_id}}">Edit {{company.name}}</a>
+		</div>
+		<a href="#/new"><button class="btn btn-neutral">Add Company</button></a>
+		</script>
+
+		<script type="text/ng-template" id="details.html">
+			<h1>Details</h1>
+			<h4 ng-show="loading">Fetching data, please wait... <i class="fa fa-spinner fa-spin"></i></h4>
+			<form ng-show="!loading"  class="form-details form-horizontal">
+				<div class="control-group">
+					<div class="controls">
+						<label class="control-label">Name</label>
+						<div class="controls">
+							<input type="text" ng-model="company.name" placeholder="Company Name">
+						</div>
+					</div>
+				</div>
+
+				<div class="control-group">
+					<div class="controls">
+						<label class="control-label">Email</label>
+						<div class="controls">
+							<input type="text" ng-model="company.email" placeholder="Email">
+						</div>
+					</div>
+				</div>
+
+				<div class="control-group">
+					<div class="controls">
+						<label class="control-label">Address</label>
+						<div class="controls">
+							<input type="text" ng-model="company.address" placeholder="Address">
+						</div>
+					</div>
+				</div>
+
+				<div class="control-group">
+					<div class="controls">
+						<label class="control-label">City</label>
+						<div class="controls">
+							<input type="text" ng-model="company.city" placeholder="City">
+						</div>
+					</div>
+				</div>
+
+				<div class="control-group">
+					<div class="controls">
+						<label class="control-label">Country</label>
+						<div class="controls">
+							<input type="text" ng-model="company.country" placeholder="Country">
+						</div>
+					</div>
+				</div>
+
+				<div class="control-group">
+					<div class="controls">
+						<label class="control-label">Phone number</label>
+						<div class="controls">
+							<input type="text" ng-model="company.phone_number" placeholder="Phone number">
+						</div>
+					</div>
+				</div>
+
+				<div class="control-group pull-right">
+					<div class="controls">
+						<button class="btn btn-primary" ng-click="save()">Save</button>
+						<a href="#/"><button class="btn btn-neutral">Back</button></a>
+					</div>
+				</div>
+			</form>
+		</script>
+
+		<style type="text/css">
+		form.form-details {
+			width: 400px;
+		}
+
+		.form-horizontal .controls {
+			margin-left: 15px;
+		}
+
+		.form-horizontal .control-label {
+			padding-right: 5px;
+		}
+		
+		</style>
+	</body>
+</html>
