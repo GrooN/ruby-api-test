@@ -61,11 +61,11 @@ get '/company' do
 end
 
 # update company
-put '/company/:id' do
+put '/company' do
 	data = JSON.parse(request.body.read)
 	halt 400 if data.nil?
 
-	company = Company.get(params[:id])
+	company = Company.get(data['company_id'])
 	halt 404 if company.nil?
 
 	%w(name address city country email phone_number).each do |key|

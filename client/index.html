@@ -15,7 +15,8 @@
 
 		app.config(function($httpProvider, RestangularProvider, $routeProvider) {
 			RestangularProvider
-				.setBaseUrl('http://stormy-hamlet-6016.herokuapp.com')
+				//.setBaseUrl('http://stormy-hamlet-6016.herokuapp.com')
+				.setBaseUrl('http://192.168.33.10:9393')
 				.setResponseExtractor(function (response, operation) {
 					var parse = function (data) {
 						var result = undefined;
@@ -90,7 +91,7 @@
 			// save an existing copy
     		$scope.save = function () {
     			$scope.loading = true;
-    			restRoute.put($scope.company).then(function () {
+    			$scope.company.put().then(function () {
 					$scope.loading = false;
     			});
     		};
