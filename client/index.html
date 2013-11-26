@@ -15,7 +15,7 @@
 
 		app.config(function($httpProvider, RestangularProvider, $routeProvider) {
 			RestangularProvider
-				.setBaseUrl('http://192.168.33.10:9393')
+				.setBaseUrl('http://stormy-hamlet-6016.herokuapp.com')
 				.setResponseExtractor(function (response, operation) {
 					var parse = function (data) {
 						var result = undefined;
