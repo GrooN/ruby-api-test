@@ -65,7 +65,7 @@ put '/company' do
 	data = JSON.parse(request.body.read)
 	halt 400 if data.nil?
 
-	company = Company.get(data['company_id'])
+	company = Company.get(data['comapny_id'])
 	halt 404 if company.nil?
 
 	%w(name address city country email phone_number).each do |key|
@@ -90,6 +90,14 @@ post '/company' do
 		:city => data['city'],
 		:country => data['country']
 	}
+
+	if (data.has_key?('email'))
+		attributes[:email] = data['email']
+	end
+
+	if (data.has_key?('phone_number'))
+		attributes[:phone_number] = data['phone_number']
+	end
 
 	company = Company.create(attributes)
 
