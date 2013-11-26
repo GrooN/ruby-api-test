@@ -36,4 +36,4 @@ Another approach could be to handle authentication via cookies, like done on mos
 
 Database with version control
 ----------
-Firstly one should keep changes documented. Secondly when changes are made, make them in seperate script files, and add version control to each script, this way it is possible to go back to previous db schemes, store procedures and the like if necessary.
+Firstly one should keep changes documented. Secondly when changes are made, make them in seperate script files, and add version control to each script, this way it is possible to go back to previous db schemes, stored procedures and the like if necessary.
